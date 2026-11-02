@@ -1,0 +1,14 @@
+node_modules/
+dist/
+*.log
+*.ndjson
+logs/
+coverage/
+.env
+.env.*
+!.env.example
+creds/credentials.json
+creds/*.credential
+opencode.json
+.opencode/
+.puku/

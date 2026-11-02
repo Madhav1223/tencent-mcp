@@ -1,0 +1,52 @@
+{
+  "name": "tencent-mcp",
+  "version": "0.2.0",
+  "description": "Unified Tencent Cloud MCP server exposing Tencent Cloud SDK operations as MCP tools",
+  "type": "module",
+  "bin": {
+    "tencent-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "test": "npm run test:unit",
+    "test:unit": "tsx --test test/unit.ts test/core.test.ts",
+    "test:integration": "npm run build && tsx test/smoke.ts",
+    "test:coverage": "c8 --all --src src --check-coverage --lines 30 --functions 55 --branches 60 --reporter=text npm run test:unit",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "audit:prod": "npm audit --omit=dev --audit-level=high",
+    "format": "prettier --write src test config/*.md .github/*.md .github/*.yml .github/workflows/*.yml .github/ISSUE_TEMPLATE/*.md .github/ISSUE_TEMPLATE/*.yml *.md *.json eslint.config.js",
+    "format:check": "prettier --check src test config/*.md .github/*.md .github/*.yml .github/workflows/*.yml .github/ISSUE_TEMPLATE/*.md .github/ISSUE_TEMPLATE/*.yml *.md *.json eslint.config.js",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test:coverage && npm run audit:prod"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "cos-nodejs-sdk-v5": "^3.0.0",
+    "tencentcloud-sdk-nodejs": "^4.1.297"
+  },
+  "overrides": {
+    "qs": "^6.16.0",
+    "fast-uri": "^3.1.6",
+    "tar": "^7.5.2",
+    "minimatch": "^10.1.1"
+  },
+  "engines": {
+    "node": "24.x"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/node": "^24.0.0",
+    "c8": "^10.1.3",
+    "eslint": "^9.39.5",
+    "prettier": "^3.9.9",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "typescript-eslint": "^8.71.0"
+  },
+  "license": "MIT"
+}
