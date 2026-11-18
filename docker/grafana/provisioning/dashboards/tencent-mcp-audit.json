@@ -1,0 +1,802 @@
+{
+  "uid": "tencent-mcp-audit",
+  "title": "Tencent MCP - Operations",
+  "description": "A live operational view of Tencent MCP traffic, safety decisions, WeData failures, and application errors.",
+  "tags": ["tencent-mcp", "operations", "audit"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 5,
+  "refresh": "15s",
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "loki"
+        },
+        "query": "label_values({job=\"tencent-mcp-audit\"}, service)",
+        "label": "Service",
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false
+      },
+      {
+        "name": "outcome",
+        "type": "query",
+        "datasource": {
+          "type": "loki",
+          "uid": "loki"
+        },
+        "query": "label_values({job=\"tencent-mcp-audit\"}, outcome)",
+        "label": "Outcome",
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 99,
+      "type": "text",
+      "title": "Navigation",
+      "description": "PowerBI-style Previous / Next",
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "options": {
+        "mode": "markdown",
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false
+        },
+        "content": "<div style=\"display:flex;justify-content:space-between;align-items:center;padding:4px 8px;background:#1f1f1f;border-radius:6px;\">\n<span style=\"color:#888\">\u25c0 Previous \u2014 <em>Operations is first page</em></span>\n<a href=\"/d/tencent-mcp-report/tencent-mcp-report\" style=\"background:#3274d9;color:white;padding:6px 14px;border-radius:4px;text-decoration:none;font-weight:600\">Next \u2192 Report</a>\n</div>"
+      },
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      }
+    },
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "API calls",
+      "description": "All audited Tencent Cloud API calls in the selected time range.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 2
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "unit": "short",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"]
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"tencent-mcp-audit\", service=~\"$service\", outcome=~\"$outcome\"}[$__range]))",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "queryType": "range"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "stat",
+      "title": "Success",
+      "description": "Successful audited calls (outcome=success).",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 2
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "green"
+          },
+          "unit": "short",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"]
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"tencent-mcp-audit\", service=~\"$service\", outcome=\"success\"}[$__range]))",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "queryType": "range"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Errors",
+      "description": "API calls that returned an error (outcome=error).",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 2
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          },
+          "unit": "short",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"]
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"tencent-mcp-audit\", service=~\"$service\", outcome=\"error\"}[$__range]))",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "queryType": "range"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "Failed",
+      "description": "Business failures \u2014 e.g. WeData workflow FAILED or DLC task failed (outcome=failed).",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 2
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "purple"
+          },
+          "unit": "short",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"]
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"tencent-mcp-audit\", service=~\"$service\", outcome=\"failed\"}[$__range]))",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "queryType": "range"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Blocked by policy",
+      "description": "Requests denied by the deny-by-default safety policy (outcome=blocked).",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 2
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "orange"
+          },
+          "unit": "short",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"]
+        },
+        "textMode": "value"
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"tencent-mcp-audit\", service=~\"$service\", outcome=\"blocked\"}[$__range]))",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "queryType": "range"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "stat",
+      "title": "WeData failures",
+      "description": "Failed WeData workflow runs in the selected time range (outcome=failed or error on service=wedata).",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 2
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "red"
+          },
+          "unit": "short",
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "center",
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"]
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({job=\"tencent-mcp-audit\", service=\"wedata\", outcome=~\"error|failed\"}[$__range]))",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "queryType": "range"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "piechart",
+      "title": "Traffic by service",
+      "description": "Which Tencent Cloud services are receiving the most calls.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 6
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "mappings": [],
+          "color": {
+            "mode": "palette-classic"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": ["value", "percent"]
+        },
+        "reduceOptions": {
+          "values": false,
+          "calcs": ["lastNotNull"],
+          "limit": 10
+        },
+        "pieType": "donut",
+        "displayLabels": ["value", "percent"]
+      },
+      "targets": [
+        {
+          "expr": "topk(10, sum by (service) (count_over_time({job=\"tencent-mcp-audit\", service=~\"$service\", outcome=~\"$outcome\"}[$__range])))",
+          "legendFormat": "{{service}}",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "queryType": "range"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "logs",
+      "title": "Recent audit entries (all)",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [],
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "showContextToggle": true,
+        "showLogLevelToggle": true,
+        "hideEmptyLogs": true
+      },
+      "targets": [
+        {
+          "expr": "{job=\"tencent-mcp-audit\", service=~\"$service\", outcome=~\"$outcome\"} | json",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "queryType": "range",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "logs",
+      "title": "Success \u2014 audit log",
+      "description": "Only outcome=success entries.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 23
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "hideEmptyLogs": true
+      },
+      "targets": [
+        {
+          "expr": "{job=\"tencent-mcp-audit\", service=~\"$service\", outcome=\"success\"} | json",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "queryType": "range",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "type": "logs",
+      "title": "Blocked \u2014 audit log",
+      "description": "Requests blocked by safety policy (outcome=blocked).",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 23
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "hideEmptyLogs": true
+      },
+      "targets": [
+        {
+          "expr": "{job=\"tencent-mcp-audit\", service=~\"$service\", outcome=\"blocked\"} | json",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "queryType": "range",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "type": "logs",
+      "title": "Error \u2014 audit log",
+      "description": "API errors (outcome=error).",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 33
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "hideEmptyLogs": true
+      },
+      "targets": [
+        {
+          "expr": "{job=\"tencent-mcp-audit\", service=~\"$service\", outcome=\"error\"} | json",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "queryType": "range",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "type": "logs",
+      "title": "Failed \u2014 audit log",
+      "description": "Business failures: workflow/task failed (outcome=failed).",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 33
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "hideEmptyLogs": true
+      },
+      "targets": [
+        {
+          "expr": "{job=\"tencent-mcp-audit\", service=~\"$service\", outcome=\"failed\"} | json",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "queryType": "range",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "logs",
+      "title": "WeData failures",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 43
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "hideEmptyLogs": true
+      },
+      "targets": [
+        {
+          "expr": "{job=\"tencent-mcp-audit\", service=\"wedata\", outcome=~\"error|failed\"} | json",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "queryType": "range",
+          "range": true
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "logs",
+      "title": "Application errors",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 43
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "enableLogDetails": true,
+        "hideEmptyLogs": true
+      },
+      "targets": [
+        {
+          "expr": "{job=\"tencent-mcp\", level=\"error\"} | json",
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "editorMode": "code",
+          "queryType": "range",
+          "range": true
+        }
+      ]
+    }
+  ],
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": [],
+      "title": "Next \u2192 Report",
+      "tooltip": "Go to Report dashboard (PowerBI-style next)",
+      "type": "link",
+      "url": "/d/tencent-mcp-report/tencent-mcp-report"
+    }
+  ]
+}

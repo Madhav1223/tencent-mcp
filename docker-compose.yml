@@ -1,0 +1,81 @@
+name: tencent-mcp-single
+
+# Single-image stack — one container, two ports:
+#   8000 → MCP (Streamable HTTP /mcp + /mcp/readme + /healthz + /approvals/*)
+#   5000 → Grafana (dashboards pre-provisioned, Loki at localhost:3100 internal)
+#
+# No separate loki/grafana services, no multi-image juggling.
+# All dashboards already baked into the image (/etc/grafana/provisioning).
+# PowerBI-style Next/Previous links are in dashboard JSON.
+#
+# MCP clients:  http://localhost:8000/mcp
+# Readme (cold-start): http://localhost:8000/mcp/readme
+# Grafana:      http://localhost:5000   (admin / change-me)
+# Health:       http://localhost:8000/healthz
+
+services:
+  tencent-mcp:
+    image: "${TENCENT_MCP_IMAGE:-mppnp/tencent-mcp:latest}"
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+    container_name: tencent-mcp
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:5000:5000"
+    environment:
+      TENCENT_MCP_HTTP_PORT: "8000"
+      TENCENT_MCP_HTTP_HOST: "0.0.0.0"
+      TENCENT_MCP_HTTP_PATH: "/mcp"
+      TENCENT_MCP_SESSION_IDLE_TIMEOUT_MS: "1800000"
+      TENCENT_MCP_CRED_FILE: "/app/creds/credentials.json"
+      TENCENT_MCP_METADATA_FILE: "/app/config/metadata.md"
+      TENCENT_MCP_SKILLS_DIR: "/app/config/skills"
+      TENCENT_MCP_KNOWLEDGE_DIR: "/app/skills"
+      TENCENT_MCP_APPROVAL_USER: "${TENCENT_MCP_APPROVAL_USER:-kali}"
+      TENCENT_MCP_APPROVAL_PASSWORD: "${TENCENT_MCP_APPROVAL_PASSWORD:-kali}"
+      TENCENTCLOUD_REGION: "${TENCENTCLOUD_REGION:-ap-singapore}"
+      # --- Mutation profile ---------------------------------------------------
+      # Profiles are defined in ./config/mutation-profiles.json (bind-mounted ro).
+      # Add your own profile there, change this value, and restart:
+      #   docker compose up -d --force-recreate
+      # Available: default | readonly | <any key you add to mutation-profiles.json>
+      TENCENT_MCP_PROFILE: "${TENCENT_MCP_PROFILE:-default}"
+      TENCENT_MCP_PROFILES_FILE: "/app/config/mutation-profiles.json"
+      # Per-list overrides (blank = use whatever the profile defines):
+      TENCENT_MCP_ALLOW_MUTATIONS: "${TENCENT_MCP_ALLOW_MUTATIONS:-}"
+      TENCENT_MCP_READONLY_PREFIXES: "${TENCENT_MCP_READONLY_PREFIXES:-}"
+      TENCENT_MCP_DENY_PREFIXES: "${TENCENT_MCP_DENY_PREFIXES:-}"
+      TENCENT_MCP_LOKI_ENDPOINT: "http://localhost:3100"
+      TENCENT_MCP_AUDIT_FILE: "/app/logs/audit.ndjson"
+      TENCENT_MCP_LOG_FILE: "/app/logs/app.ndjson"
+      GF_SERVER_HTTP_PORT: "5000"
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:-admin}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:-change-me}"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./creds:/app/creds:ro
+      - ./config:/app/config:ro
+      - tencent_mcp_data:/var/lib/grafana
+      - tencent_mcp_loki:/loki
+      - tencent_mcp_logs:/app/logs
+      - tencent_mcp_skills:/app/skills
+    tmpfs:
+      - /tmp:mode=1777,size=256m
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:8000/healthz | grep -q ok && wget -qO- http://127.0.0.1:3100/ready | grep -q ready && wget -qO- http://127.0.0.1:5000/api/health | grep -q ok || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  tencent_mcp_data:
+  tencent_mcp_loki:
+  tencent_mcp_logs:
+  tencent_mcp_skills:

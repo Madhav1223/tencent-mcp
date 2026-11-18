@@ -1,0 +1,15 @@
+node_modules
+dist
+test
+coverage
+*.log
+*.ndjson
+logs
+.git
+.gitignore
+.env
+.env.*
+.idea
+.vscode
+creds/credentials.json
+creds/*.credential
