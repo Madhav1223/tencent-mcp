@@ -1,0 +1,72 @@
+---
+name: tencent-tokenhub
+description: Tencent Cloud TOKENHUB via the Tencent MCP server — 34 actions in API version v20260322 (15 read-only auto-allowed). Use for plan, token, glossary, endpoint, entries, model. Triggers on mentions of tokenhub, plan, token, glossary, endpoint, entries, model, order, team. Reads pass automatically; mutations need TENCENT_MCP_ALLOW_MUTATIONS; destructive prefixes are blocked.
+group: General service
+metadata:
+  version: "4"
+---
+
+# Tencent Cloud TOKENHUB
+
+General service: 34 actions in API version `v20260322` — 15 read-only (auto-allowed), 7 gated mutations, 12 blocked destructive.
+
+**Works best with** the Tencent MCP server — `call_tencent_api` with `service: "tokenhub"`, plus `list_service_actions` for the exact live inventory and `get_metadata_context` for region defaults. Required params below are exact per the official SDK.
+
+## How to work this service
+
+Inventory first with the service's `Describe*` / `List*` / `Get*` actions, filtered narrowly — confirm IDs before any mutation.
+Price with `InquiryPrice*` where available before creating billable resources.
+Mutations outside the readonly prefixes need explicit `TENCENT_MCP_ALLOW_MUTATIONS` entries; destructive prefixes are blocked outright.
+
+1. Confirm region defaults: `get_metadata_context` (falls back to `ap-singapore`).
+2. Inventory first: pick a read action below, then narrow with filters/IDs.
+3. Mutate only with an allowlist entry — confirm IDs and cost with the user first.
+
+SDK source (public, exact version pinned): https://github.com/TencentCloud/tencentcloud-sdk-nodejs/tree/master/src/services/tokenhub/v20260322 — action signatures in `tokenhub_client.ts`, full request/response shapes in `tokenhub_models.ts`.
+
+## Read actions (auto-allowed, 15)
+
+| Action | What it does |
+|---|---|
+| `DescribeModelEndpointList` | Describe model endpoint list |
+| `DescribeApiKeyList` | Describe api key list |
+| `DescribeGlossaries` | Describe glossaries |
+| `DescribeTokenPlanApiKeyList` | Describe token plan api key list<br>Required: `TeamId` |
+| `DescribeTokenPlanApiKeyUsageDetail` | Describe token plan api key usage detail<br>Required: `TeamId` |
+| `DescribeModelList` | Describe model list |
+| `DescribeModelQuota` | Describe model quota<br>Required: `ModelId` |
+| `DescribeGlossaryEntries` | Describe glossary entries<br>Required: `GlossaryId` |
+| `DescribeUsageRankList` | Describe usage rank list<br>Required: `Dimension` (apikey | endpoint | model), `StartTime`, `EndTime` |
+| `DescribeEndpoint` | Describe endpoint<br>Required: `EndpointId` |
+| `DescribeTokenPlan` | Describe token plan<br>Required: `TeamId` |
+| `DescribeTokenPlanApiKey` | Describe token plan api key<br>Required: `ApiKeyId` |
+| `DescribeTokenPlanList` | Describe token plan list |
+| `DescribeApiKey` | Describe api key<br>Required: `Platform` |
+| `DescribeTokenPlanApiKeySecret` | Describe token plan api key secret<br>Required: `ApiKeyId` |
+## Mutations (gated — need allowlist, 7)
+
+| Action | What it does |
+|---|---|
+| `CreateTokenPlanTeamOrderAndBuy` | Create token plan team order and buy<br>Required: `ProductType` (enterprise | enterprise-auto), `TeamName`, `TimeSpan`, `CreditOrToken` |
+| `CreateTokenPlanApiKeys` | Create token plan api keys<br>Required: `TeamId`, `ApiKeyName`, `Count` |
+| `CreateGlossaryEntries` | Create glossary entries<br>Required: `GlossaryId`, `Entries` |
+| `CreateEndpoint` | Create endpoint<br>Required: `EndpointName`, `ModelId`, `ChargeType` (FREE | TOKEN | TPM | COMPUTE_UNIT) |
+| `UpgradeTokenPlanTeamOrder` | Upgrade token plan team order<br>Required: `TeamId`, `NewCreditOrToken` |
+| `CreateApiKey` | Create api key<br>Required: `ApiKeyName`, `Platform` (maas), `BindType` (all | model_custom_endpoint_custom) |
+| `CreateGlossary` | Create glossary<br>Required: `Name`, `Source`, `Target` |
+
+## Blocked destructive actions (12)
+
+`RenewTokenPlanTeamOrder`, `ModifyApiKeyInfo`, `DeleteGlossaryEntries`, `ModifyApiKeyStatus`, `DeleteGlossary`, `ModifyTokenPlanApiKeySecret`, `DeleteEndpoint`, `ModifyTokenPlanApiKey`, `ModifyGlossaryEntries`, `DeleteTokenPlanApiKey`, `ModifyEndpoint`, `DeleteApiKey` — console or policy change only.
+## Mistakes to avoid
+
+- **Case-sensitive names.** Service is lowercase `tokenhub`, actions PascalCase exactly as listed.
+- **Region-scoped resources.** Pass the resource's own region; the default won't find resources elsewhere.
+- **Pinned API version.** Calls run against `v20260322` — params outside that version's model are rejected.
+- **Credentials are file-only** (`creds/credentials.json`). `Token verification failed` means fix the file, not the call.
+- **Required params are strict.** Every `Required:` field above must be present with the documented shape (nested objects included) — most validation failures are a missing nested struct, so mirror an existing object via the matching `Get*`/`Describe*` call first.
+
+## Verify
+
+- Re-run the matching read action after any mutation and diff the fields; success responses can precede propagation.
+- Every call is audited — check `/app/logs/audit.ndjson` or Grafana (`job="tencent-mcp-audit"`, `service="tokenhub"`) for the allow/block decision and reason.
