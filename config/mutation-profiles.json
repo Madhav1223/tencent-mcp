@@ -1,0 +1,64 @@
+{
+  "_comment": [
+    "Mutation profiles control which Tencent Cloud API actions are permitted.",
+    "",
+    "Switch profiles:  set TENCENT_MCP_PROFILE=<name> in .env and restart the container.",
+    "Add a profile:    add a new key below, restart — no code change needed.",
+    "",
+    "Each profile MUST define:",
+    "  label            — human-readable description shown in logs and get_audit_policy.",
+    "  allowedMutations — array of 'service:Action' strings that are explicitly allowed",
+    "                     beyond readonly actions. Use 'service:*' to allow all actions",
+    "                     for a service, or '*:*' to allow everything (dev only).",
+    "",
+    "Each profile MAY override (omit to use the shared defaults below):",
+    "  readonlyPrefixes — action name prefixes always allowed as read-only.",
+    "  denyPrefixes     — action name prefixes always blocked, even if allowlisted.",
+    "",
+    "Singular/plural equivalence is automatic: allowing 'dlc:CreateTask' also",
+    "covers 'dlc:CreateTasks' and vice versa.",
+    "",
+    "Env-var fine-tuning (applied on top of the active profile, wins over the file):",
+    "  TENCENT_MCP_ALLOW_MUTATIONS     — comma-separated list, extends/overrides allowedMutations",
+    "  TENCENT_MCP_READONLY_PREFIXES   — comma-separated list, overrides readonlyPrefixes",
+    "  TENCENT_MCP_DENY_PREFIXES       — comma-separated list, overrides denyPrefixes"
+  ],
+
+  "_defaults": {
+    "readonlyPrefixes": [
+      "Describe", "Get", "List", "Head", "Query",
+      "InquiryPrice", "Check", "Preview", "Count",
+      "Search", "Statistic", "Export", "Download",
+      "multipartList", "selectObjectContent"
+    ],
+    "denyPrefixes": [
+      "Delete", "Destroy", "Terminate", "Drop",
+      "Remove", "Release", "Reset", "Purge",
+      "Stop", "Kill", "Cancel", "Modify",
+      "Renew", "Recover", "Restart"
+    ]
+  },
+
+  "default": {
+    "label": "Default — DLC SQL execution only (safe baseline)",
+    "allowedMutations": [
+      "dlc:CreateTask",
+      "dlc:CreateTasks",
+      "dlc:CreateTaskSync",
+      "dlc:CreateSparkSessionBatchSQL"
+    ]
+  },
+
+  "readonly": {
+    "label": "Read-only — zero mutations, safest, CI/reporting/audit environments",
+    "allowedMutations": [],
+    "denyPrefixes": [
+      "Delete", "Destroy", "Terminate", "Drop",
+      "Remove", "Release", "Reset", "Purge",
+      "Stop", "Kill", "Cancel", "Modify",
+      "Renew", "Recover", "Restart",
+      "Create", "Update", "Put", "Run", "Start",
+      "Upload", "Submit", "Send", "Trigger", "Execute"
+    ]
+  }
+}
