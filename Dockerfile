@@ -45,6 +45,7 @@ COPY config ./config
 # Keep the built-in readme and profiles available when the operator bind-mounts an
 # incomplete ./config directory over /app/config.
 COPY config/mcp-readme.md ./config-baked/mcp-readme.md
+COPY config/mutation-profiles.json ./config-baked/mutation-profiles.json
 COPY skills ./skills
 # Pristine copy of baked skills: /app/skills is a named volume at runtime and
 # shadows the baked files, so the entrypoint seeds missing entries from here
