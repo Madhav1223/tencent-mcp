@@ -1,0 +1,24 @@
+# CODEOWNERS — required reviewers for high-risk paths.
+# Add a real GitHub username or team to the right of each rule.
+# Until then, the fallback @mppnp is used. Update before the first public push.
+
+# Default: require review from the maintainer on everything.
+# Remove this line if you prefer to scope ownership narrowly.
+/                   @mppnp
+
+# Release / container surface — these files can ship code to GHCR or build the public image.
+/Dockerfile         @mppnp
+/docker/            @mppnp
+/.dockerignore      @mppnp
+/.github/workflows/release.yml @mppnp
+
+# Safety-critical source — never merge changes here without an explicit review.
+/src/policy.ts      @mppnp
+/src/guard.ts       @mppnp
+/src/approval.ts    @mppnp
+/src/audit.ts       @mppnp
+
+# Governance files.
+/SECURITY.md        @mppnp
+/CODE_OF_CONDUCT.md @mppnp
+/.github/CODEOWNERS @mppnp
