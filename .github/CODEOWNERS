@@ -1,0 +1,21 @@
+# CODEOWNERS — required reviewers for high-risk paths.
+
+# Default: require review from the maintainer on everything.
+*                   @Madhav1223
+
+# Release / container surface — these files can ship code to GHCR or build the public image.
+/Dockerfile         @Madhav1223
+/docker/            @Madhav1223
+/.dockerignore      @Madhav1223
+/.github/workflows/ @Madhav1223
+
+# Safety-critical source — never merge changes here without an explicit review.
+/src/policy.ts      @Madhav1223
+/src/guard.ts       @Madhav1223
+/src/approval.ts    @Madhav1223
+/src/audit.ts       @Madhav1223
+
+# Governance files.
+/SECURITY.md        @Madhav1223
+/CODE_OF_CONDUCT.md @Madhav1223
+/.github/CODEOWNERS @Madhav1223
